@@ -4,11 +4,11 @@ import bodyParser from 'body-parser';
 
 
 // Configure and start the HTTP server.
-const port: number = 8088;
+const port: number = 8080;
 const app: Express = express();
 app.use(bodyParser.json());
 app.get("/api/list", listPolls);
-app.post("/api/create-poll", createPoll);
+app.post("/api/add", createPoll);
 app.post("/api/vote", vote);
 app.post("/api/get-result", getResult);
 

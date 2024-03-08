@@ -2,11 +2,11 @@ import * as assert from 'assert';
 import * as httpMocks from 'node-mocks-http';
 import { createPoll, reset, vote, getResult, listPolls } from './routes';
 
-describe('create-poll', function() {
+describe('add', function() {
   it('name error', function() {
     // Missing name
     const req1 = httpMocks.createRequest(
-      {method: 'POST', url: '/api/create-poll',
+      {method: 'POST', url: '/api/add',
        body: {name: "", time: 1, options: "chicken \n pizza"}}
     );
     const res1 = httpMocks.createResponse();
@@ -15,7 +15,7 @@ describe('create-poll', function() {
 
     // Did not fill in anything
     const req2 = httpMocks.createRequest(
-      {method: 'POST', url: '/api/create-poll'}
+      {method: 'POST', url: '/api/add'}
     );
     const res2 = httpMocks.createResponse();
     createPoll(req2, res2);
@@ -25,7 +25,7 @@ describe('create-poll', function() {
   it('time error', function() {
     // Missing time
     const req = httpMocks.createRequest(
-      {method: 'POST', url: '/api/create-poll',
+      {method: 'POST', url: '/api/add',
        body: {name: "dinner", options: "chicken \n pizza"}}
     );
     const res = httpMocks.createResponse();
@@ -34,7 +34,7 @@ describe('create-poll', function() {
 
     // Time is 0
     const req1 = httpMocks.createRequest(
-      {method: 'POST', url: '/api/create-poll',
+      {method: 'POST', url: '/api/add',
        body: {name: "dinner", time: 0, options: "chicken \n pizza"}}
     );
     const res1 = httpMocks.createResponse();
@@ -44,7 +44,7 @@ describe('create-poll', function() {
 
     // Time is negative number
     const req2 = httpMocks.createRequest(
-      {method: 'POST', url: '/api/create-poll',
+      {method: 'POST', url: '/api/add',
        body: {name: "dinner", time: -1, options: "chicken \n pizza"}}
     );
     const res2 = httpMocks.createResponse();
@@ -56,7 +56,7 @@ describe('create-poll', function() {
   it('options error', function() {
     // Missing options
     const req = httpMocks.createRequest(
-      {method: 'POST', url: '/api/create-poll',
+      {method: 'POST', url: '/api/add',
        body: {name: "dinner", time: 2, options: ""}}
     );
     const res = httpMocks.createResponse();
@@ -66,7 +66,7 @@ describe('create-poll', function() {
 
     // Only one option
     const req1 = httpMocks.createRequest(
-      {method: 'POST', url: '/api/create-poll',
+      {method: 'POST', url: '/api/add',
        body: {name: "dinner", time: 2, options: "chicken"}}
     );
     const res1 = httpMocks.createResponse();
@@ -78,7 +78,7 @@ describe('create-poll', function() {
   it ('create', function() {
     // Successfully
     const req = httpMocks.createRequest(
-      {method: 'POST', url: '/api/create-poll',
+      {method: 'POST', url: '/api/add',
        body: {name: "dinner", time: 2, options: "chicken \n pizza"}}
     );
     const res = httpMocks.createResponse();
@@ -90,7 +90,7 @@ describe('create-poll', function() {
 
     // Name has been taken
     const req1 = httpMocks.createRequest(
-      {method: 'POST', url: '/api/create-poll',
+      {method: 'POST', url: '/api/add',
        body: {name: "dinner", time: 2, options: "chicken \n pizza"}}
     );
     const res1 = httpMocks.createResponse();
@@ -100,7 +100,7 @@ describe('create-poll', function() {
 
     // Longer time
     const req2 = httpMocks.createRequest(
-      {method: 'POST', url: '/api/create-poll',
+      {method: 'POST', url: '/api/add',
        body: {name: "lunch", time: 8, options: "chicken \n pizza"}}
     );
     const res2 = httpMocks.createResponse();
@@ -118,7 +118,7 @@ describe('create-poll', function() {
 describe('vote', function() {
   it('create', function() {
     const req = httpMocks.createRequest(
-      {method: 'POST', url: '/api/create-poll',
+      {method: 'POST', url: '/api/add',
        body: {name: "breakfast", time: 2, options: "chicken \n pizza"}}
     );
     const res = httpMocks.createResponse();
@@ -191,7 +191,7 @@ describe('vote', function() {
 describe('result', function() {
   it('create poll', function() {
     const req = httpMocks.createRequest(
-      {method: 'POST', url: '/api/create-poll',
+      {method: 'POST', url: '/api/add',
        body: {name: "dinner2", time: 2, options: "chicken \n pizza"}}
     );
     const res = httpMocks.createResponse();
@@ -228,7 +228,7 @@ describe('result', function() {
 describe('listPolls', function() {
   it('create polls', function() {
     const req = httpMocks.createRequest(
-      {method: 'POST', url: '/api/create-poll',
+      {method: 'POST', url: '/api/add',
        body: {name: "dinner", time: 2, options: "chicken \n pizza"}}
     );
     const res = httpMocks.createResponse();
@@ -238,7 +238,7 @@ describe('listPolls', function() {
     assert.deepStrictEqual(res._getData().poll.options, ['chicken', 'pizza']);
 
     const req1 = httpMocks.createRequest(
-      {method: 'POST', url: '/api/create-poll',
+      {method: 'POST', url: '/api/add',
        body: {name: "breakfast1", time: 5, options: "chicken \n pizza"}}
     );
     const res1 = httpMocks.createResponse();
@@ -248,7 +248,7 @@ describe('listPolls', function() {
     assert.deepStrictEqual(res1._getData().poll.options, ['chicken', 'pizza']);
 
     const req2 = httpMocks.createRequest(
-      {method: 'POST', url: '/api/create-poll',
+      {method: 'POST', url: '/api/add',
        body: {name: "dinner3", time: 10, options: "chicken \n pizza"}}
     );
     const res2 = httpMocks.createResponse();
