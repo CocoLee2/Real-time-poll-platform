@@ -1,5 +1,5 @@
 import express, { Express } from "express";
-import { dummy } from './routes';
+import { createPoll, vote, listPolls, getResult } from './routes';
 import bodyParser from 'body-parser';
 
 
@@ -7,5 +7,10 @@ import bodyParser from 'body-parser';
 const port: number = 8088;
 const app: Express = express();
 app.use(bodyParser.json());
-app.get("/api/dummy", dummy);  // TODO: REMOVE
+app.get("/api/list", listPolls);
+app.post("/api/create-poll", createPoll);
+app.post("/api/vote", vote);
+app.post("/api/get-result", getResult);
+
+
 app.listen(port, () => console.log(`Server listening on ${port}`));
