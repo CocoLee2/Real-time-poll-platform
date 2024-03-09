@@ -1,6 +1,6 @@
 import React, { Component, MouseEvent } from "react";
 import { isRecord } from './record';
-import { Poll, parsePoll } from "./poll";
+import { Poll, parsePoll } from "./Polls";
 
 
 type ListProps = {

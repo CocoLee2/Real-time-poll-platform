@@ -1,151 +1,147 @@
-import React, { Component, ChangeEvent, MouseEvent } from 'react';
-import { isRecord } from './record';
+import React, { Component, /*ChangeEvent,**/ MouseEvent } from 'react';
+import { Poll } from './PollsApp';
+
+export type NewPollInfo = {
+    name: string,
+    minutes: number,
+    options: string[]
+}
 
 type NewPollProps = {
-  onBackClick: () => void;
-};
-
-type PollData = {
-  name: string;
-  time: number;
-  options: string[];
-};
+    polls: ReadonlyArray<Poll>,
+    onAddClick: (info: NewPollInfo) => void,
+    onBackClick: () => void
+}
 
 type NewPollState = {
-  name: string;
-  time: string;
-  options: string;
-  error: string;
-};
+    name: string,
+    optiontext: string,
+    minutes: string,
+    error: string
+}
 
+// allows the user to create a new poll
 export class NewPoll extends Component<NewPollProps, NewPollState> {
-  constructor(props: NewPollProps) {
-    super(props);
-    this.state = { name: '', time: '10', options: '', error: '' };
-  }
-
-  doNameChange = (event: ChangeEvent<HTMLInputElement>): void => {
-    this.setState({ name: event.target.value, error: '' });
-  };
-
-  doTimeChange = (event: ChangeEvent<HTMLInputElement>): void => {
-    this.setState({ time: event.target.value, error: '' });
-  };
-
-  doOptionsChange = (event: ChangeEvent<HTMLTextAreaElement>): void => {
-    this.setState({ options: event.target.value, error: '' });
-  };
-
-  doCreateClick = (): void => {
-    const name = this.state.name.trim();
-    const time = this.state.time.trim();
-    const options = this.state.options.trim();
-
-    if (!name.trim() || !time.trim() || !options.trim()) {
-      this.setState({ error: 'Please fill in all fields.' });
-      return;
+    
+    constructor(props: NewPollProps) {
+        super(props);
+        this.state = {name: "", optiontext: "", minutes:"10", error: ""}
     }
 
-    const timeNum = parseInt(time);
-    if (isNaN(timeNum) || timeNum <= 0) {
-      this.setState({ error: 'Time must be a positive integer.' });
-      return;
-    }
-
-    const optionsArray = options.split('\n').filter(option => option.trim()).map(option => option.trim());
-    if (optionsArray.length < 2) {
-      this.setState({ error: 'At least 2 options are required.' });
-      return;
-    }
-
-    this.doAddClick({ name: name.trim(), time: timeNum, options: optionsArray });
-  };
-
-  doAddClick = (pollData: PollData): void => {
-    if (!pollData.name || !pollData.time || !pollData.options) {
-      this.setState({ error: 'Missing poll data.' });
-      return;
-    }
-  
-    const args = { name: pollData.name, time: pollData.time, options: pollData.options };
-    fetch("/api/add", {
-      method: "POST", body: JSON.stringify(args),
-      headers: { "Content-Type": "application/json" }
-    })
-      .then(this.doAddResp)
-      .catch(() => this.doAddError("Failed to connect to the server."));
-  };
-
-  doAddResp = (resp: Response): void => {
-    if (resp.status === 200) {
-      resp.json().then(this.doAddJson)
-          .catch(() => this.doAddError("200 response is not JSON"));
-    } else if (resp.status === 400) {
-      resp.text().then(this.doAddError)
-          .catch(() => this.doAddError("400 response is not text"));
-    } else {
-      this.doAddError(`bad status code from /api/add: ${resp.status}`);
-    }
-  };
-
-  doAddJson = (data: unknown): void => {
-    if (!isRecord(data)) {
-      console.error("bad data from /api/add: not a record", data);
-      return;
-    }
-
-    this.props.onBackClick();  // show the updated list
-  };
-
-  doAddError = (msg: string): void => {
-    this.setState({error: msg})
-  };
-
-  doBackClick = (_: MouseEvent<HTMLButtonElement>): void => {
-    this.props.onBackClick();  // tell the parent this was clicked
-  };
-
-  render = (): JSX.Element => {
-    return (
-      <div>
-        <h2>New Poll</h2>
+    render = (): JSX.Element => {
+        return (
         <div>
-          <label htmlFor="name">Name:</label>
-          <input id="name" type="text" value={this.state.name} onChange={this.doNameChange} />
-        </div>
-        <div>
-          <label htmlFor="time">Time (minutes):</label>
-          <input id="time" type="number" min="1" value={this.state.time} onChange={this.doTimeChange} />
-        </div>
-        <div>
-          <label htmlFor="options">Options (one per line, minimum 2 lines):</label>
-          <br />
-          <textarea id="options" rows={3} value={this.state.options} onChange={this.doOptionsChange}></textarea>
-        </div>
+            <h3>New Poll</h3>
+            <div>
+            <label htmlFor="name">Name: </label>
+            <input type="text" value={this.state.name || ''}
+                     id="name" onChange={this.doNameChange}></input>
+            <br/>
+            <div>
+            <label htmlFor="minutes">Minutes:</label>
+            <input id="minutes" type="number" min="1" value={this.state.minutes}
+              onChange={this.doMinutesChange}></input>
+            </div>
+            <label htmlFor="optiontext">Options (one per line, minimum 2 lines):</label>
+            <br/>
+            <textarea id="optiontext" rows={3} cols={40} value={this.state.optiontext}
+            onChange={this.doOptiontextChange}></textarea>
+            <br/>
+            <button type="button" onClick={this.doSaveClick}>Create</button>
+            <button type="button" onClick={this.doBackClick}>Back</button>
+            </div>
+            {this.renderError()}
+        </div>);
+    }
 
-        <button type="button" onClick={this.doCreateClick}>Create Poll</button>
-        <button type="button" onClick={this.doBackClick}>Back</button>
-        {this.renderError()}
-      </div>
-    );
-  }
+    // show error message
+    renderError = (): JSX.Element => {
+        if (this.state.error.length === 0) {
+          return <div></div>;
+        } else {
+          const style = {width: '300px', backgroundColor: 'rgb(246,194,192)',
+              border: '1px solid rgb(137,66,61)', borderRadius: '5px', padding: '5px' };
+          return (<div style={{marginTop: '15px'}}>
+              <span style={style}><b>Error</b>: {this.state.error}</span>
+            </div>);
+        }
+    };
+    
+    // set the name of new poll
+    doNameChange = (evt: React.ChangeEvent<HTMLInputElement>): void => {
+        this.setState({name: evt.target.value});
+    };
 
-  renderError = (): JSX.Element | null => {
-    if (this.state.error.length === 0) {
-      return <div></div>;
-    } else {
-      const style = {
-        color: 'white',
-        backgroundColor: 'red',
-        padding: '10px',
-        borderRadius: '5px',
-        marginTop: '15px'
+    // set the options
+    doOptiontextChange = (evt: React.ChangeEvent<HTMLTextAreaElement>): void => {
+        this.setState({optiontext: evt.target.value});
+    };
+
+    // set the minutes
+    doMinutesChange = (evt: React.ChangeEvent<HTMLInputElement>): void => {
+        this.setState({minutes: evt.target.value, error: ""});
+    };
+
+    // check if multiple options have the same string name (if an option appeared more than once)
+    doCheckrepeatClick = (val: string[]): boolean => {
+        // Inv: i < val.length
+        for(let i:number = 0; i < val.length; i++)
+        {   
+            const list = val.slice(i+1);
+            const option: string = val[i];
+            if(list.indexOf(option) >= 0)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    doBackClick = (_: MouseEvent<HTMLButtonElement>): void => {
+        this.props.onBackClick();  // tell the parent this was clicked
+    };
+
+    doSaveClick = (_: MouseEvent<HTMLButtonElement>): void => {
+        // Verify that the user entered all required information.
+        if (this.state.name.trim().length === 0 ||
+            this.state.optiontext.trim().length === 0 ||
+            this.state.minutes.trim().length === 0) {
+          this.setState({error: "a required field is missing."});
+          return;
+        }
+        const options = this.state.optiontext.split('\n').filter(line => line.trim() !== '');
+        if(this.doCheckrepeatClick(options))
+        {
+            this.setState({error: "there are repeated options"})
+            return;
+        }
+        if(options.length <= 1)
+        {
+            this.setState({error: "there is only one option"})
+            return;
+        }
+        // Verify that minutes is a number.
+        const minutes = parseFloat(this.state.minutes);
+        if (isNaN(minutes) || minutes < 1 || Math.floor(minutes) !== minutes) {
+          this.setState({error: "minutes is not a positive integer"});
+          return;
+        }
+        const names: string[] = [];
+        for(const poll of this.props.polls)
+        {
+            names.push(poll.name);
+        }
+        // if(names.indexOf(this.state.name) >= 0)
+        // {
+        //     this.setState({error: `poll called ${this.state.name} already exists`});
+        //     return;
+        // }
+        this.setState({error: ""});
+        // Ask the app to start this auction (adding it to the list).
+        this.props.onAddClick({
+            name: this.state.name,
+            minutes: minutes,
+            options: options,
+         });
       };
-      return (
-        <div style={style}>
-          <b>Error</b>: {this.state.error}
-        </div>
-      );
-    }
-  }
 }
