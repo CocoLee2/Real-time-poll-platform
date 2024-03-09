@@ -3,9 +3,10 @@ import { isRecord } from "./record";
 // Description of an individual poll
 export type Poll = {
   readonly name: string,
-  readonly endTime: number,  // ms since epoch
-  readonly options: string,
-  readonly result: string
+  readonly option: string[],
+  readonly votedOption: number[],
+  readonly endTime: number,
+  readonly totalvotes: number
 };
 
 /**
@@ -14,7 +15,7 @@ export type Poll = {
  * @param val unknown data to parse into an Poll
  * @return Poll if val is a valid Poll and undefined otherwise
  */
-export const parsePoll = (val: unknown): undefined | Poll => {
+export const parsePoll = (val: unknown): Poll | undefined => {
   if (!isRecord(val)) {
     console.error("not a poll", val)
     return undefined;
@@ -36,13 +37,12 @@ export const parsePoll = (val: unknown): undefined | Poll => {
     console.error("not a poll: 'options' should contain at least two lines");
     return undefined;
   }
-  if (typeof val.result !== "string") {
-    console.error("not a poll: missing 'result'", val)
-    return undefined;
-  }
   
   return {
-    name: val.name, endTime: val.endTime, options: val.options, result: val.result
-  }
-
+    name: val.name,
+    option: optionsArray,
+    votedOption: [],
+    endTime: val.endTime,
+    totalvotes: 0
+  };
 };
